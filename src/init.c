@@ -1,5 +1,15 @@
+#include "../include/photon.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+
+void ph_init(enum ph_enum_graphics_api api)
+{
+
+}
+void ph_shutdown()
+{
+
+}
 
 int init_window() {
     // Initialize SDL with video support
@@ -32,11 +42,11 @@ int init_window() {
 
     // Main loop
     SDL_Event event;
-    int running = 1;
+    bool running = true;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) {
-                running = 0;
+                running = false;
             }
         }
         // Rendering and other logic can be added here
