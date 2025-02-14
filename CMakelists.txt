@@ -2,10 +2,16 @@ cmake_minimum_required(VERSION 3.14)
 project(photon VERSION 1.0 LANGUAGES C)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-
 set(MACOS CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-
 include(FetchContent)
+
+# ======================== CONFIGURATION
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(DEBUG)
+endif()
 
 # ======================== DEPS
 # === SDL 3
@@ -16,22 +22,22 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL)
 
-# === Vulkan
-find_package(Vulkan REQUIRED)
-if (Vulkan_FOUND)
-    message(STATUS "Found Vulkan: ${Vulkan_LIBRARY}")
-else()
-    message(FATAL_ERROR "Vulkan SDK not found. Please ensure VULKAN_SDK is set correctly.")
-endif()
-
 if (MACOS)
-    # === MoltenVK
+    # === Metal bindings
     FetchContent_Declare(
-        MoltenVK
-        GIT_REPOSITORY https://github.com/KhronosGroup/MoltenVK.git
-        GIT_TAG v1.2.11
+        cmt
+        GIT_REPOSITORY https://github.com/recp/cmt.git
+        GIT_TAG fa15eda
     )
-    FetchContent_MakeAvailable(MoltenVK)
+    FetchContent_MakeAvailable(cmt)
+else()
+    # === Vulkan
+    find_package(Vulkan REQUIRED)
+    if (Vulkan_FOUND)
+        message(STATUS "Found Vulkan: ${Vulkan_LIBRARY}")
+    else()
+        message(FATAL_ERROR "Vulkan SDK not found. Please ensure VULKAN_SDK is set correctly.")
+    endif()
 endif()
 
 # ========================= SOURCE
@@ -41,13 +47,16 @@ add_library(${PROJECT_NAME} STATIC
     ${PHOTON_PRIVATE_SOURCES}
     ${PHOTON_PUBLIC_HEADERS}
 )
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 target_include_directories(${PROJECT_NAME} PRIVATE ${SDL_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
-target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 if (MACOS)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${MOLTENVK})
-    target_include_directories(${PROJECT_NAME} PRIVATE ${moltenvk_SOURCE_DIR}/MoltenVK/include)
+    target_link_libraries(${PROJECT_NAME} PRIVATE cmt_lib)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${cmt_SOURCE_DIR}/include)
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 endif()
 
 # ======================== EXAMPLES
