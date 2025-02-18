@@ -24,12 +24,13 @@ FetchContent_MakeAvailable(SDL)
 
 if (MACOS)
     # === Metal bindings
-    FetchContent_Declare(
-        cmt
-        GIT_REPOSITORY https://github.com/recp/cmt.git
-        GIT_TAG fa15eda
-    )
-    FetchContent_MakeAvailable(cmt)
+    # FetchContent_Declare(
+    #     cmt
+    #     GIT_REPOSITORY https://github.com/recp/cmt.git
+    #     GIT_TAG fa15eda
+    # )
+    # FetchContent_MakeAvailable(cmt)
+    add_subdirectory(/Users/tomtar/dev/projects/cmt ${CMAKE_BINARY_DIR}/cmt)
 else()
     # === Vulkan
     find_package(Vulkan REQUIRED)

@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 
+// Naming Conventions:
+// Types: PascalCase
+// Variables: camelCase
+// Functions: snake_case
+// Enums: UPPERCASE
+// Defines: UPPERCASE
+
 // =========================
 //          Errors
 // =========================
@@ -22,29 +29,28 @@ typedef uint64_t u64;
 typedef float f32;
 typedef double f64;
 
-typedef i32 ph_window_handle;
-typedef i32 ph_surface_handle;
+typedef i32 PhWindowHandle;
+typedef void* PhSurfaceHandle;
 
 // =========================
 //          Lifetime
 // =========================
-typedef enum {
+typedef enum PhEnumGraphicsAPI {
   /// Choses the graphics API automatically based on
   /// the current operating system and hardware
-  AutoAPI,
-
-  Vulkan,
-  Metal
-} ph_enum_graphics_api;
-void ph_init(ph_enum_graphics_api api);
+  AUTO_API,
+  VULKAN,
+  METAL
+} PhEnumGraphicsAPI;
+void ph_init(PhEnumGraphicsAPI api);
 void ph_shutdown();
 void ph_main_loop_iteration();
 
 // =========================
 //          Events
 // =========================
-typedef enum { KEYBOARD_EVENT } ph_event_type;
-typedef enum {
+typedef enum PhEventType { KEYBOARD_EVENT } PhEventType;
+typedef enum PhKey {
   A = 4,
   B = 5,
   C = 6,
@@ -124,33 +130,37 @@ typedef enum {
   LEFT = 80,
   DOWN = 81,
   UP = 82,
-} ph_key;
-typedef enum { LEFT_BTN, RIGHT_BTN, MIDDLE_BTN } ph_mouse_button;
-typedef union {
-  ph_event_type type;
-} ph_event;
-bool ph_event_is_key_down(ph_key);
-bool ph_event_is_key_up(ph_key);
-bool ph_event_is_mouse_button_up(ph_mouse_button);
-bool ph_event_is_mouse_button_down(ph_mouse_button);
+} PhKey;
+typedef enum PhMouseButton { LEFT_BTN, RIGHT_BTN, MIDDLE_BTN } PhMouseButton;
+typedef union PhEvent {
+  PhEventType type;
+} PhEvent;
+bool ph_event_is_key_down(PhKey);
+bool ph_event_is_key_up(PhKey);
+bool ph_event_is_mouse_button_up(PhMouseButton);
+bool ph_event_is_mouse_button_down(PhMouseButton);
 
 // =========================
 //          Window
 // =========================
-typedef enum { Fullscreen = 0, Borderless = 1 } ph_enum_window_flag;
-ph_window_handle ph_window_create(char *title, i32 width, i32 height);
-ph_window_handle ph_window_create_flag(char *title, ph_enum_window_flag flag);
-void ph_window_close(ph_window_handle);
-bool ph_window_is_closed(ph_window_handle);
-// ph_surface_handle ph_render_get_surface(ph_window_handle);
+typedef enum PhEnumWindowFlag {
+  FULLSCREEN = 0,
+  BORDERLESS = 1
+} PhEnumWindowFlag;
+PhWindowHandle ph_window_create(char *title, i32 width, i32 height);
+PhWindowHandle ph_window_create_flag(char *title, i32 width, i32 height,
+                                     PhEnumWindowFlag flag);
+void ph_window_close(PhWindowHandle);
+bool ph_window_is_closed(PhWindowHandle);
+PhSurfaceHandle ph_render_get_surface(PhWindowHandle);
 
 // =========================
 //          Graphics
 // =========================
-typedef enum { RED, GREEN, BLUE } ph_enum_color;
-// void ph_graphics_begin_pass(ph_surface_handle);
-// void ph_graphics_clear(ph_enum_color);
-// void ph_graphics_end_pass();
-// void ph_graphics_submit();
+typedef enum PhEnumColor { RED, GREEN, BLUE } PhEnumColor;
+void ph_graphics_begin_pass(PhSurfaceHandle);
+void ph_graphics_clear(PhEnumColor);
+void ph_graphics_end_pass();
+void ph_graphics_submit();
 
 #endif
