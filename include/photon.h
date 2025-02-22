@@ -1,14 +1,15 @@
 #ifndef PHOTON_H
 #define PHOTON_H
 
+#include <stddef.h>
 #include <stdint.h>
 
-// Naming Conventions:
-// Types: PascalCase
-// Variables: camelCase
-// Functions: snake_case
-// Enums: UPPERCASE
-// Defines: UPPERCASE
+// === Naming Conventions
+//  Types: PascalCase
+//  Variables: camelCase
+//  Functions: snake_case
+//  Enums: UPPERCASE
+//  Defines: UPPERCASE
 
 // =========================
 //          Errors
@@ -26,11 +27,16 @@ typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
+typedef size_t usize;
 typedef float f32;
 typedef double f64;
 
 typedef i32 PhWindowHandle;
-typedef void* PhSurfaceHandle;
+typedef void *PhSurface;
+typedef void *PhFramebuffer;
+typedef void *PhPipelineFormula;
+typedef void *PhVertexInput;
+typedef void *PhPipeline;
 
 // =========================
 //          Lifetime
@@ -152,15 +158,50 @@ PhWindowHandle ph_window_create_flag(char *title, i32 width, i32 height,
                                      PhEnumWindowFlag flag);
 void ph_window_close(PhWindowHandle);
 bool ph_window_is_closed(PhWindowHandle);
-PhSurfaceHandle ph_render_get_surface(PhWindowHandle);
+PhSurface ph_window_get_surface(PhWindowHandle);
 
 // =========================
-//          Graphics
+//         Graphics
 // =========================
-typedef enum PhEnumColor { RED, GREEN, BLUE } PhEnumColor;
-void ph_graphics_begin_pass(PhSurfaceHandle);
-void ph_graphics_clear(PhEnumColor);
-void ph_graphics_end_pass();
-void ph_graphics_submit();
+typedef enum PhEnumColor {
+  BLACK = 0x000000FF,
+  WHITE = 0xFFFFFFFF,
+  RED = 0xFF0000FF,
+  GREEN = 0x00FF00FF,
+  BLUE = 0x0000FFFF
+} PhEnumColor;
+typedef enum PhEnumSize {
+  FLOAT = 28,
+  FLOAT2 = 29,
+  FLOAT3 = 30,
+  FLOAT4 = 31,
+  INT = 32,
+  INT2 = 33,
+  INT3 = 34,
+  INT4 = 35
+} PhEnumSize;
+typedef enum PhEnumPipelineStage { VERTEX, FRAGMENT } PhEnumPipelineStage;
+typedef enum PhEnumShaderLang { MSL, GLSL, HLSL } PhEnumShaderLang;
+PhPipelineFormula ph_graphics_new_pipeline_formula();
+void ph_graphics_set_func_from_src(PhPipelineFormula, PhEnumPipelineStage,
+                                   char *, PhEnumShaderLang);
+PhVertexInput ph_graphics_new_vertex_input();
+void ph_graphics_vertex_layout(PhVertexInput, i32 idx, usize size);
+void ph_graphics_vertex_attribute(PhVertexInput, i32 idx, PhEnumSize,
+                                  i32 offset);
+PhPipeline ph_graphics_new_pipeline(PhPipelineFormula, PhVertexInput);
+
+// =========================
+//          Render
+// =========================
+void ph_render_begin_pass(PhSurface);
+void ph_render_clear(PhEnumColor);
+void ph_render_begin_recording();
+void ph_render_bind_pipeline(PhPipeline);
+void ph_render_send_vertex_bytes(void *bytes, usize size);
+void ph_render_draw_triangles(i32 startIdx, i32 numTriangles);
+void ph_render_present();
+void ph_render_end_pass();
+void ph_render_submit();
 
 #endif

@@ -1,5 +1,5 @@
 #include "SDL3/SDL_metal.h"
-#include "SDL3/SDL_vulkan.h"
+// #include "SDL3/SDL_vulkan.h"
 #include "internal.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_video.h>
@@ -17,7 +17,7 @@ WindowData g_windows[MAX_WINDOWS];
 SDL_WindowFlags ph_window_flags_to_sdl(PhEnumWindowFlag flag);
 SDL_WindowFlags ph_graphics_api_to_sdl(PhEnumGraphicsAPI api);
 PhWindowHandle create_window(char *title, i32 width, i32 height,
-                             SDL_WindowFlags flags);
+                       SDL_WindowFlags flags);
 bool is_handle_valid(PhWindowHandle handle);
 bool window_exists(PhWindowHandle handle);
 bool destroy_window(PhWindowHandle handle);
@@ -28,7 +28,7 @@ PhWindowHandle ph_window_create(char *title, i32 width, i32 height) {
 }
 
 PhWindowHandle ph_window_create_flag(char *title, i32 width, i32 height,
-                                     PhEnumWindowFlag flag) {
+                               PhEnumWindowFlag flag) {
   SDL_WindowFlags flags = ph_graphics_api_to_sdl(g_graphicsCtx.api);
   flags |= ph_window_flags_to_sdl(flag);
   return create_window(title, width, height, flags);
@@ -44,13 +44,13 @@ bool ph_window_is_closed(PhWindowHandle handle) {
   return is_handle_valid(handle) && g_windows[handle].window == NULL;
 }
 
-PhSurfaceHandle ph_render_get_surface(PhWindowHandle handle) {
+PhSurface ph_window_get_surface(PhWindowHandle handle) {
   if (window_exists(handle)) {
     switch (g_graphicsCtx.api) {
     case METAL:
       if (g_windows[handle].surface == NULL) {
         g_windows[handle].surface =
-          SDL_Metal_CreateView(g_windows[handle].window);
+            SDL_Metal_CreateView(g_windows[handle].window);
       }
       return SDL_Metal_GetLayer(g_windows[handle].surface);
     case VULKAN:
@@ -74,16 +74,16 @@ void init_sdl() {
 }
 
 void quit_sdl() {
-  for (i32 i = 0; i < MAX_WINDOWS; ++i) {
+  for (i8 i = 0; i < MAX_WINDOWS; ++i) {
     destroy_window(i);
   }
   SDL_Quit();
 }
 
 PhWindowHandle create_window(char *title, i32 width, i32 height,
-                             SDL_WindowFlags flags) {
+                       SDL_WindowFlags flags) {
   PhWindowHandle handle = -1;
-  for (i32 i = 0; i < MAX_WINDOWS; ++i) {
+  for (i8 i = 0; i < MAX_WINDOWS; ++i) {
     if (g_windows[i].window == NULL) {
       handle = i;
       break;
@@ -124,7 +124,8 @@ bool destroy_window(PhWindowHandle handle) {
 }
 bool destroy_window_with_sdl_id(SDL_WindowID id) {
   for (int i = 0; i < MAX_WINDOWS; ++i) {
-    if (g_windows[i].window != NULL && SDL_GetWindowID(g_windows[i].window) == id) {
+    if (g_windows[i].window != NULL &&
+        SDL_GetWindowID(g_windows[i].window) == id) {
       destroy_window(i);
       return true;
     }

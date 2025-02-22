@@ -2,7 +2,6 @@
 #define INTERNAL_H
 #include "SDL3/SDL_video.h"
 #include <photon.h>
-#include <stddef.h>
 #include <stdio.h>
 
 // ========================================== DEBUG
@@ -43,8 +42,21 @@ typedef struct PhGraphics {
   void (*init)();
   void (*shutdown)();
 
-  void (*begin_pass)(PhSurfaceHandle);
-  void (*clear)();
+  PhPipelineFormula (*new_pipeline_formula)();
+  void (*set_func_from_src)(PhPipelineFormula, PhEnumPipelineStage, char *,
+                            PhEnumShaderLang);
+  PhVertexInput (*new_vertex_input)();
+  void (*vertex_layout)(PhVertexInput, i32 idx, usize size);
+  void (*vertex_attribute)(PhVertexInput, i32 idx, PhEnumSize, i32 offset);
+  PhPipeline (*new_pipeline)(PhPipelineFormula, PhVertexInput);
+
+  void (*begin_pass)(PhSurface);
+  void (*clear)(PhEnumColor);
+  void (*begin_recording)();
+  void (*bind_pipeline)(PhPipeline);
+  void (*send_vertex_bytes)(void *, usize);
+  void (*draw_triangles)(i32, i32);
+  void (*present)();
   void (*end_pass)();
   void (*submit)();
 } PhGraphics;
