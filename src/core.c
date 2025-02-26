@@ -1,6 +1,9 @@
 #include "internal.h"
 #include <photon.h>
 
+PhGraphics g_graphics;
+PhGraphicsContext g_graphicsCtx;
+
 void ph_init(PhEnumGraphicsAPI api) {
   PH_TRACE("Photon init...");
   init_sdl();

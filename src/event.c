@@ -44,7 +44,6 @@ void enqueue_all_events() {
 // keyboard
 bool ph_event_is_key_down(PhKey key) { return g_key_down[key]; }
 bool ph_event_is_key_up(PhKey key) { return g_key_up[key]; }
-
 // mouse button
 bool ph_event_is_mouse_button_down(PhMouseButton btn) {
   return g_mouse_btn_down[btn];
@@ -52,7 +51,5 @@ bool ph_event_is_mouse_button_down(PhMouseButton btn) {
 bool ph_event_is_mouse_button_up(PhMouseButton btn) {
   return g_mouse_btn_up[btn];
 }
-
-// mouse motion
-
-// mouse wheel
+// TODO: mouse motion
+// TODO: mouse wheel

@@ -6,9 +6,9 @@
 #include "cmt/types_foundation.h"
 #include "cmt/types_metal.h"
 #include "internal.h"
-#include "photon.h"
 #include <cmt/cmt.h>
 #include <cmt/command_queue.h>
+#include <photon.h>
 
 typedef struct PhMetalContext {
   MtDevice *device;
@@ -49,38 +49,74 @@ void metal_shutdown() {
   PH_TRACE("Metal shutdown complete");
 }
 
-PhPipelineFormula metal_new_pipeline_formula() {
-  // TODO: turn format into param
-  return mtNewRenderPipeline(MtPixelFormatBGRA8Unorm);
+void metal_new_render_pipeline_formula(PhRenderPipelineFormula *form) {
+  // TODO: turn format into param or separate function
+  form->desc = mtNewRenderPipeline(MtPixelFormatBGRA8Unorm);
+  form->vertexInput = mtVertexDescNew();
+  form->vertCache = NULL;
+  form->fragCache = NULL;
 }
-void metal_set_func_from_src(PhPipelineFormula desc, PhEnumPipelineStage stage,
-                             char *src, PhEnumShaderLang lang) {
-  PH_ASSERT(lang == MSL, "You have to use MSL for Metal");
-  NsError err;
-  MtLibrary *lib = mtNewLibraryWithSource(g_metal.device, src, NULL, &err);
-  PH_ASSERT(lib, mtErrorLocalizedDescription(err));
+void metal_set_func(MtLibrary *lib, PhRenderPipelineFormula *form,
+                    PhEnumPipelineStage stage, char *cache) {
   if (stage == VERTEX) {
+    form->vertCache = cache;
     MtFunction *func = mtNewFunctionWithName(lib, "vertexShader");
-    mtSetFunc(desc, func, MT_FUNC_VERT);
+    mtSetFunc(form->desc, func, MT_FUNC_VERT);
   } else if (stage == FRAGMENT) {
+    form->fragCache = cache;
     MtFunction *func = mtNewFunctionWithName(lib, "fragmentShader");
-    mtSetFunc(desc, func, MT_FUNC_FRAG);
+    mtSetFunc(form->desc, func, MT_FUNC_FRAG);
   } else {
     PH_ASSERT(false);
   }
 }
-PhVertexInput metal_new_vertex_input() { return mtVertexDescNew(); }
-void metal_vertex_layout(PhVertexInput desc, i32 idx, usize size) {
-  mtVertexLayout(desc, idx, size, 1, MtVertexStepFunctionPerVertex);
-}
-void metal_vertex_attribute(PhVertexInput desc, i32 idx, PhEnumSize size,
-                            i32 offset) {
-  mtVertexAttrib(desc, idx, (MtVertexFormat)size, offset, 0);
-}
-PhPipeline metal_new_pipeline(PhPipelineFormula desc, PhVertexInput input) {
+void metal_save_render_pipline_to_cache(char *cache,
+                                        PhPipelineDescriptor pipelineDesc) {
+  if (cache == NULL)
+    return;
   NsError err;
-  mtSetVertexDesc(desc, input);
-  MtRenderPipeline *pipeline = mtNewRenderState(g_metal.device, desc, &err);
+  MtBinaryArchiveDescriptor *archiveDesc = mtNewBinaryArchiveDesc();
+  MtBinaryArchive *archive =
+      mtNewBinaryArchive(archiveDesc, g_metal.device, &err);
+  PH_ASSERT(archive, mtErrorLocalizedDescription(err));
+  bool success = mtAddRenderPipelineToArchive(archive, pipelineDesc, &err);
+  PH_ASSERT(success, mtErrorLocalizedDescription(err));
+  success = mtSerializeToURL(archive, cache, &err);
+  PH_ASSERT(success, mtErrorLocalizedDescription(err));
+}
+void metal_set_func_from_cache(PhRenderPipelineFormula *form,
+                               PhEnumPipelineStage stage, char *filename,
+                               PhEnumShaderLang lang) {
+  PH_ASSERT(lang == MSL, "You have to use MSL for Metal");
+  NsError err;
+  MtLibrary *lib = mtNewLibraryWithURL(g_metal.device, filename, &err);
+  PH_ASSERT(lib, mtErrorLocalizedDescription(err));
+  metal_set_func(lib, form, stage, NULL);
+}
+void metal_set_func_from_src(PhRenderPipelineFormula *form,
+                             PhEnumPipelineStage stage, char *src,
+                             PhEnumShaderLang lang, char *cache) {
+  PH_ASSERT(lang == MSL, "You have to use MSL for Metal");
+  NsError err;
+  MtLibrary *lib = mtNewLibraryWithSource(g_metal.device, src, NULL, &err);
+  PH_ASSERT(lib, mtErrorLocalizedDescription(err));
+  metal_set_func(lib, form, stage, cache);
+}
+void metal_vertex_layout(PhRenderPipelineFormula *form, i32 idx, usize size) {
+  mtVertexLayout(form->vertexInput, idx, size, 1,
+                 MtVertexStepFunctionPerVertex);
+}
+void metal_vertex_attribute(PhRenderPipelineFormula *form, i32 idx,
+                            PhEnumSize size, i32 offset) {
+  mtVertexAttrib(form->vertexInput, idx, (MtVertexFormat)size, offset, 0);
+}
+PhPipeline metal_new_pipeline(PhRenderPipelineFormula *form) {
+  NsError err;
+  mtSetVertexDesc(form->desc, form->vertexInput);
+  metal_save_render_pipline_to_cache(form->vertCache, form->desc);
+  metal_save_render_pipline_to_cache(form->fragCache, form->desc);
+  MtRenderPipeline *pipeline =
+      mtNewRenderState(g_metal.device, form->desc, &err);
   PH_ASSERT(pipeline, mtErrorLocalizedDescription(err));
   return pipeline;
 }
@@ -134,9 +170,9 @@ void create_metal_graphics() {
   g_graphics.init = metal_init;
   g_graphics.shutdown = metal_shutdown;
 
-  g_graphics.new_pipeline_formula = metal_new_pipeline_formula;
+  g_graphics.new_pipeline_formula = metal_new_render_pipeline_formula;
   g_graphics.set_func_from_src = metal_set_func_from_src;
-  g_graphics.new_vertex_input = metal_new_vertex_input;
+  g_graphics.set_func_from_cache = metal_set_func_from_cache;
   g_graphics.vertex_layout = metal_vertex_layout;
   g_graphics.vertex_attribute = metal_vertex_attribute;
   g_graphics.new_pipeline = metal_new_pipeline;

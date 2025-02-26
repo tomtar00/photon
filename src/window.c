@@ -16,35 +16,35 @@ WindowData g_windows[MAX_WINDOWS];
 
 SDL_WindowFlags ph_window_flags_to_sdl(PhEnumWindowFlag flag);
 SDL_WindowFlags ph_graphics_api_to_sdl(PhEnumGraphicsAPI api);
-PhWindowHandle create_window(char *title, i32 width, i32 height,
+PhWindow create_window(char *title, i32 width, i32 height,
                        SDL_WindowFlags flags);
-bool is_handle_valid(PhWindowHandle handle);
-bool window_exists(PhWindowHandle handle);
-bool destroy_window(PhWindowHandle handle);
+bool is_handle_valid(PhWindow handle);
+bool window_exists(PhWindow handle);
+bool destroy_window(PhWindow handle);
 
-PhWindowHandle ph_window_create(char *title, i32 width, i32 height) {
+PhWindow ph_window_create(char *title, i32 width, i32 height) {
   SDL_WindowFlags flags = ph_graphics_api_to_sdl(g_graphicsCtx.api);
   return create_window(title, width, height, flags);
 }
 
-PhWindowHandle ph_window_create_flag(char *title, i32 width, i32 height,
+PhWindow ph_window_create_flag(char *title, i32 width, i32 height,
                                PhEnumWindowFlag flag) {
   SDL_WindowFlags flags = ph_graphics_api_to_sdl(g_graphicsCtx.api);
   flags |= ph_window_flags_to_sdl(flag);
   return create_window(title, width, height, flags);
 }
 
-void ph_window_close(PhWindowHandle handle) {
+void ph_window_close(PhWindow handle) {
   if (!destroy_window(handle)) {
     PH_ERROR("Failed to find window with handle: %d", handle);
   }
 }
 
-bool ph_window_is_closed(PhWindowHandle handle) {
+bool ph_window_is_closed(PhWindow handle) {
   return is_handle_valid(handle) && g_windows[handle].window == NULL;
 }
 
-PhSurface ph_window_get_surface(PhWindowHandle handle) {
+PhSurface ph_window_get_surface(PhWindow handle) {
   if (window_exists(handle)) {
     switch (g_graphicsCtx.api) {
     case METAL:
@@ -80,9 +80,9 @@ void quit_sdl() {
   SDL_Quit();
 }
 
-PhWindowHandle create_window(char *title, i32 width, i32 height,
+PhWindow create_window(char *title, i32 width, i32 height,
                        SDL_WindowFlags flags) {
-  PhWindowHandle handle = -1;
+  PhWindow handle = -1;
   for (i8 i = 0; i < MAX_WINDOWS; ++i) {
     if (g_windows[i].window == NULL) {
       handle = i;
@@ -101,7 +101,7 @@ PhWindowHandle create_window(char *title, i32 width, i32 height,
   g_windows[handle] = (WindowData){.window = window};
   return handle;
 }
-bool destroy_window(PhWindowHandle handle) {
+bool destroy_window(PhWindow handle) {
   if (window_exists(handle)) {
     if (g_windows[handle].surface != NULL) {
       switch (g_graphicsCtx.api) {
@@ -133,11 +133,11 @@ bool destroy_window_with_sdl_id(SDL_WindowID id) {
   return false;
 }
 
-bool is_handle_valid(PhWindowHandle handle) {
+bool is_handle_valid(PhWindow handle) {
   return handle >= 0 && handle < MAX_WINDOWS;
 }
 
-bool window_exists(PhWindowHandle handle) {
+bool window_exists(PhWindow handle) {
   return is_handle_valid(handle) && g_windows[handle].window != NULL;
 }
 SDL_WindowFlags ph_window_flags_to_sdl(PhEnumWindowFlag flag) {

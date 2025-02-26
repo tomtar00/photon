@@ -2,10 +2,10 @@
 
 i32 main() {
   ph_init(AUTO_API);
-  
-  PhWindowHandle window = ph_window_create("window", 800, 600);
+
+  PhWindow window = ph_window_create("01-basics", 800, 600);
   PhSurface surface = ph_window_get_surface(window);
-  
+
   while (!ph_window_is_closed(window)) {
     ph_main_loop_iteration();
     // events handling

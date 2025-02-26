@@ -2,11 +2,15 @@
 #define INTERNAL_H
 #include "SDL3/SDL_video.h"
 #include <photon.h>
-#include <stdio.h>
+
+// ========================================== FILE
+bool file_exists(const char *path);
+char *load_file(const char *filename);
 
 // ========================================== DEBUG
 #ifdef DEBUG
 #include <assert.h>
+#include <stdio.h>
 #define PH_TRACE(fmt, ...) printf("[TRACE] " fmt "\n", ##__VA_ARGS__)
 #define PH_DEBUG(fmt, ...) printf("[DEBUG] " fmt "\n", ##__VA_ARGS__)
 #define PH_ASSERT_2(cond, msg)                                                 \
@@ -24,7 +28,11 @@
 #else
 #define PH_TRACE(fmt, ...)
 #define PH_DEBUG(fmt, ...)
-#define PH_ASSERT(cond)
+#define PH_ASSERT_2(cond, msg)
+#define PH_ASSERT_1(cond)
+#define PH_ASSERT_CHOOSER(_1, _2, NAME, ...) NAME
+#define PH_ASSERT(...)                                                         \
+  PH_ASSERT_CHOOSER(__VA_ARGS__, PH_ASSERT_2, PH_ASSERT_1)(__VA_ARGS__)
 #endif
 #define PH_WARN(fmt, ...) printf("[WARN] " fmt "\n", ##__VA_ARGS__)
 #define PH_ERROR(fmt, ...) printf("[ERROR] " fmt "\n", ##__VA_ARGS__)
@@ -42,13 +50,15 @@ typedef struct PhGraphics {
   void (*init)();
   void (*shutdown)();
 
-  PhPipelineFormula (*new_pipeline_formula)();
-  void (*set_func_from_src)(PhPipelineFormula, PhEnumPipelineStage, char *,
-                            PhEnumShaderLang);
-  PhVertexInput (*new_vertex_input)();
-  void (*vertex_layout)(PhVertexInput, i32 idx, usize size);
-  void (*vertex_attribute)(PhVertexInput, i32 idx, PhEnumSize, i32 offset);
-  PhPipeline (*new_pipeline)(PhPipelineFormula, PhVertexInput);
+  void (*new_pipeline_formula)(PhRenderPipelineFormula *);
+  void (*set_func_from_src)(PhRenderPipelineFormula *, PhEnumPipelineStage,
+                            char *, PhEnumShaderLang, char *cache);
+  void (*set_func_from_cache)(PhRenderPipelineFormula *, PhEnumPipelineStage,
+                              char *, PhEnumShaderLang);
+  void (*vertex_layout)(PhRenderPipelineFormula *, i32 idx, usize size);
+  void (*vertex_attribute)(PhRenderPipelineFormula *, i32 idx, PhEnumSize,
+                           i32 offset);
+  PhPipeline (*new_pipeline)(PhRenderPipelineFormula *);
 
   void (*begin_pass)(PhSurface);
   void (*clear)(PhEnumColor);

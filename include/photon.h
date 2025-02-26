@@ -31,15 +31,15 @@ typedef size_t usize;
 typedef float f32;
 typedef double f64;
 
-typedef i32 PhWindowHandle;
+typedef i32 PhWindow;
 typedef void *PhSurface;
 typedef void *PhFramebuffer;
-typedef void *PhPipelineFormula;
-typedef void *PhVertexInput;
+typedef void *PhPipelineDescriptor;
+typedef void *PhVertexInputDescriptor;
 typedef void *PhPipeline;
 
 // =========================
-//          Lifetime
+//          Core
 // =========================
 typedef enum PhEnumGraphicsAPI {
   /// Choses the graphics API automatically based on
@@ -153,12 +153,12 @@ typedef enum PhEnumWindowFlag {
   FULLSCREEN = 0,
   BORDERLESS = 1
 } PhEnumWindowFlag;
-PhWindowHandle ph_window_create(char *title, i32 width, i32 height);
-PhWindowHandle ph_window_create_flag(char *title, i32 width, i32 height,
-                                     PhEnumWindowFlag flag);
-void ph_window_close(PhWindowHandle);
-bool ph_window_is_closed(PhWindowHandle);
-PhSurface ph_window_get_surface(PhWindowHandle);
+PhWindow ph_window_create(char *title, i32 width, i32 height);
+PhWindow ph_window_create_flag(char *title, i32 width, i32 height,
+                               PhEnumWindowFlag flag);
+void ph_window_close(PhWindow);
+bool ph_window_is_closed(PhWindow);
+PhSurface ph_window_get_surface(PhWindow);
 
 // =========================
 //         Graphics
@@ -180,16 +180,28 @@ typedef enum PhEnumSize {
   INT3 = 34,
   INT4 = 35
 } PhEnumSize;
+typedef struct PhRenderPipelineFormula {
+  PhPipelineDescriptor desc;
+  PhVertexInputDescriptor vertexInput;
+  char *vertCache;
+  char *fragCache;
+} PhRenderPipelineFormula;
 typedef enum PhEnumPipelineStage { VERTEX, FRAGMENT } PhEnumPipelineStage;
 typedef enum PhEnumShaderLang { MSL, GLSL, HLSL } PhEnumShaderLang;
-PhPipelineFormula ph_graphics_new_pipeline_formula();
-void ph_graphics_set_func_from_src(PhPipelineFormula, PhEnumPipelineStage,
-                                   char *, PhEnumShaderLang);
-PhVertexInput ph_graphics_new_vertex_input();
-void ph_graphics_vertex_layout(PhVertexInput, i32 idx, usize size);
-void ph_graphics_vertex_attribute(PhVertexInput, i32 idx, PhEnumSize,
-                                  i32 offset);
-PhPipeline ph_graphics_new_pipeline(PhPipelineFormula, PhVertexInput);
+void ph_graphics_new_pipeline_formula(PhRenderPipelineFormula*);
+void ph_graphics_set_func_from_src(PhRenderPipelineFormula *,
+                                   PhEnumPipelineStage, char *src,
+                                   PhEnumShaderLang, char *cache);
+void ph_graphics_set_func_from_file(PhRenderPipelineFormula *,
+                                    PhEnumPipelineStage, char *filename,
+                                    PhEnumShaderLang, char *cache);
+void ph_graphics_set_func_from_cache(PhRenderPipelineFormula *,
+                                     PhEnumPipelineStage, char *filename,
+                                     PhEnumShaderLang);
+void ph_graphics_vertex_layout(PhRenderPipelineFormula *, i32 idx, usize size);
+void ph_graphics_vertex_attribute(PhRenderPipelineFormula *, i32 idx,
+                                  PhEnumSize, i32 offset);
+PhPipeline ph_graphics_new_pipeline(PhRenderPipelineFormula *);
 
 // =========================
 //          Render

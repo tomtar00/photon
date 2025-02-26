@@ -1,27 +1,41 @@
 #include "internal.h"
 #include <photon.h>
+#include <stdlib.h>
 
-PhPipelineFormula ph_graphics_new_pipeline_formula() {
-  return g_graphics.new_pipeline_formula();
+void ph_graphics_new_pipeline_formula(PhRenderPipelineFormula *form) {
+  g_graphics.new_pipeline_formula(form);
 }
-void ph_graphics_set_func_from_src(PhPipelineFormula form,
+void ph_graphics_set_func_from_src(PhRenderPipelineFormula *form,
                                    PhEnumPipelineStage stage, char *src,
-                                   PhEnumShaderLang lang) {
-  g_graphics.set_func_from_src(form, stage, src, lang);
+                                   PhEnumShaderLang lang, char *cache) {
+  if (file_exists(cache)) {
+    ph_graphics_set_func_from_cache(form, stage, cache, lang);
+    return;
+  }
+  g_graphics.set_func_from_src(form, stage, src, lang, cache);
 }
-PhVertexInput ph_graphics_new_vertex_input() {
-  return g_graphics.new_vertex_input();
+void ph_graphics_set_func_from_file(PhRenderPipelineFormula *form,
+                                    PhEnumPipelineStage stage, char *filename,
+                                    PhEnumShaderLang lang, char *cache) {
+  char *src = load_file(filename);
+  g_graphics.set_func_from_src(form, stage, src, lang, cache);
+  free(src);
 }
-void ph_graphics_vertex_layout(PhVertexInput input, i32 idx, usize size) {
-  g_graphics.vertex_layout(input, idx, size);
+void ph_graphics_set_func_from_cache(PhRenderPipelineFormula *form,
+                                     PhEnumPipelineStage stage, char *filename,
+                                     PhEnumShaderLang lang) {
+  g_graphics.set_func_from_cache(form, stage, filename, lang);
 }
-void ph_graphics_vertex_attribute(PhVertexInput input, i32 idx, PhEnumSize size,
-                                  i32 offset) {
-  g_graphics.vertex_attribute(input, idx, size, offset);
+void ph_graphics_vertex_layout(PhRenderPipelineFormula *form, i32 idx,
+                               usize size) {
+  g_graphics.vertex_layout(form, idx, size);
 }
-PhPipeline ph_graphics_new_pipeline(PhPipelineFormula form,
-                                    PhVertexInput input) {
-  return g_graphics.new_pipeline(form, input);
+void ph_graphics_vertex_attribute(PhRenderPipelineFormula *form, i32 idx,
+                                  PhEnumSize size, i32 offset) {
+  g_graphics.vertex_attribute(form, idx, size, offset);
+}
+PhPipeline ph_graphics_new_pipeline(PhRenderPipelineFormula *form) {
+  return g_graphics.new_pipeline(form);
 }
 
 void ph_render_begin_pass(PhSurface handle) { g_graphics.begin_pass(handle); }

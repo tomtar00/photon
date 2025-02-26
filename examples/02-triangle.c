@@ -37,17 +37,19 @@ Vertex triangleVertices[] = {
 i32 main() {
   ph_init(AUTO_API);
 
-  PhWindowHandle window = ph_window_create("window", 800, 600);
+  PhWindow window = ph_window_create("02-triangle", 800, 600);
   PhSurface surface = ph_window_get_surface(window);
 
-  PhPipelineFormula formula = ph_graphics_new_pipeline_formula();
-  ph_graphics_set_func_from_src(formula, VERTEX, vertexSrc, MSL);
-  ph_graphics_set_func_from_src(formula, FRAGMENT, fragSrc, MSL);
-  PhVertexInput input = ph_graphics_new_vertex_input();
-  ph_graphics_vertex_layout(input, 0, sizeof(Vertex));
-  ph_graphics_vertex_attribute(input, 0, FLOAT2, offsetof(Vertex, position));
-  ph_graphics_vertex_attribute(input, 1, FLOAT4, offsetof(Vertex, color));
-  PhPipeline pipeline = ph_graphics_new_pipeline(formula, input);
+  PhRenderPipelineFormula pipelineFormula;
+  ph_graphics_new_pipeline_formula(&pipelineFormula);
+  ph_graphics_set_func_from_src(&pipelineFormula, VERTEX, vertexSrc, MSL, NULL);
+  ph_graphics_set_func_from_src(&pipelineFormula, FRAGMENT, fragSrc, MSL, NULL);
+  ph_graphics_vertex_layout(&pipelineFormula, 0, sizeof(Vertex));
+  ph_graphics_vertex_attribute(&pipelineFormula, 0, FLOAT2,
+                               offsetof(Vertex, position));
+  ph_graphics_vertex_attribute(&pipelineFormula, 1, FLOAT4,
+                               offsetof(Vertex, color));
+  PhPipeline pipeline = ph_graphics_new_pipeline(&pipelineFormula);
 
   while (!ph_window_is_closed(window)) {
     ph_main_loop_iteration();
@@ -57,7 +59,7 @@ i32 main() {
     }
     // rendering
     ph_render_begin_pass(surface);
-    ph_render_clear(0xFF00FFFF);
+    ph_render_clear(0xFFFF00FF);
     ph_render_begin_recording();
     ph_render_bind_pipeline(pipeline);
     ph_render_send_vertex_bytes(triangleVertices, sizeof(triangleVertices));
