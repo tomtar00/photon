@@ -211,7 +211,7 @@ void ph_render_clear(PhEnumColor);
 void ph_render_begin_recording();
 void ph_render_bind_pipeline(PhPipeline);
 void ph_render_send_vertex_bytes(void *bytes, usize size);
-void ph_render_draw_triangles(i32 startIdx, i32 numTriangles);
+void ph_render_draw_triangles(i32 startIdx, i32 numVertices);
 void ph_render_present();
 void ph_render_end_pass();
 void ph_render_submit();

@@ -153,8 +153,8 @@ void metal_bind_pipeline(PhPipeline pipeline) {
 void metal_send_vertex_bytes(void *data, usize size) {
   mtVertexBytes(g_metal.encoder, data, size, 0);
 }
-void metal_draw_triangles(i32 startIdx, i32 numTriangles) {
-  mtDrawPrims(g_metal.encoder, MtPrimitiveTypeTriangle, startIdx, numTriangles);
+void metal_draw_triangles(i32 startIdx, i32 numVertices) {
+  mtDrawPrims(g_metal.encoder, MtPrimitiveTypeTriangle, startIdx, numVertices);
 }
 void metal_present() {
   mtCommandBufferPresentDrawable(g_metal.commandBuffer, g_metal.drawable);

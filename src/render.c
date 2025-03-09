@@ -47,8 +47,8 @@ void ph_render_bind_pipeline(PhPipeline pipeline) {
 void ph_render_send_vertex_bytes(void *bytes, usize size) {
   g_graphics.send_vertex_bytes(bytes, size);
 }
-void ph_render_draw_triangles(i32 startIdx, i32 numTriangles) {
-  g_graphics.draw_triangles(startIdx, numTriangles);
+void ph_render_draw_triangles(i32 startIdx, i32 numVertices) {
+  g_graphics.draw_triangles(startIdx, numVertices);
 }
 void ph_render_present() { g_graphics.present(); }
 void ph_render_end_pass() { g_graphics.end_pass(); }

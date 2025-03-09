@@ -10,7 +10,6 @@ char *load_file(const char *filename);
 // ========================================== DEBUG
 #ifdef DEBUG
 #include <assert.h>
-#include <stdio.h>
 #define PH_TRACE(fmt, ...) printf("[TRACE] " fmt "\n", ##__VA_ARGS__)
 #define PH_DEBUG(fmt, ...) printf("[DEBUG] " fmt "\n", ##__VA_ARGS__)
 #define PH_ASSERT_2(cond, msg)                                                 \
