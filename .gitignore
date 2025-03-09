@@ -4,3 +4,4 @@ build
 .vs
 cache/*
 !cache/.gitkeep
+.DS_Store
